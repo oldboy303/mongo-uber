@@ -24,7 +24,28 @@ describe('Drivers controller', () => {
     });
   });
 
-  
+  it('GET to /api/drivers finds drivers near a location', (done) => {
+    const seattleDriver = new Driver({
+      email: 'seattle@test.com',
+      geometry: { type: 'Point', coordinates: [-122.475, 47.614] }
+    });
+    const miamiDriver = new Driver({
+      email: 'miami@test.com',
+      geometry: { type: 'Point', coordinates: [-80.253, 25.791] }
+    });
+
+    Promise.all([ seattleDriver.save(), miamiDriver.save() ])
+      .then(() => {
+        request(app)
+          .get('/api/drivers?lng=-80.25&lat=25.79')
+          .end((err, response) => {
+            assert(response.body.length === 1);
+            assert(response.body[0].obj.email === 'miami@test.com');
+            done();
+          })
+      })
+
+  });
 
   it('PUT to /api/drivers/:id edits an existing driver', (done) => {
     const driver = new Driver({ email: 'jd@test.com' });
